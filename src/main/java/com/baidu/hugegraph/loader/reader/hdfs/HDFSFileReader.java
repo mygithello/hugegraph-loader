@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.baidu.hugegraph.util.JsonUtil;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileChecksum;
 import org.apache.hadoop.fs.FileStatus;
@@ -62,6 +63,7 @@ public class HDFSFileReader extends FileReader {
             enableKerberos(source);
             this.hdfs = FileSystem.get(this.conf);
         } catch (IOException e) {
+            e.printStackTrace();
             throw new LoadException("Failed to create HDFS file system", e);
         }
         Path path = new Path(source.path());
@@ -70,7 +72,9 @@ public class HDFSFileReader extends FileReader {
 
     private void enableKerberos(HDFSSource source) throws IOException {
         KerberosConfig kerberosConfig = this.source().kerberosConfig();
+        System.out.println("=============3==================");
         if (kerberosConfig != null && kerberosConfig.enable() ) {
+            System.out.println("=============4=================");
             System.setProperty("java.security.krb5.conf",
                                kerberosConfig.krb5Conf());
             UserGroupInformation.setConfiguration(this.conf);
@@ -137,6 +141,8 @@ public class HDFSFileReader extends FileReader {
 
     private Configuration loadConfiguration() {
         Configuration conf = new Configuration();
+        System.out.println("=====set fs.hdfs.impl: org.apache.hadoop.hdfs.DistributedFileSystem===");
+        conf.set("fs.hdfs.impl", "org.apache.hadoop.hdfs.DistributedFileSystem");//java.io.IOException: No FileSystem for scheme: hdfs
         conf.addResource(new Path(this.source().coreSitePath()));
         conf.addResource(new Path(this.source().hdfsSitePath()));
         return conf;

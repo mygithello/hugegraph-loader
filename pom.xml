@@ -204,11 +204,11 @@
             <artifactId>mssql-jdbc</artifactId>
             <version>7.2.0.jre8</version>
         </dependency>
-        <dependency>
-            <groupId>com.oracle</groupId>
-            <artifactId>ojdbc8</artifactId>
-            <version>12.2.0.1</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.oracle</groupId>-->
+<!--            <artifactId>ojdbc8</artifactId>-->
+<!--            <version>12.2.0.1</version>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>org.apache.hive</groupId>
             <artifactId>hive-exec</artifactId>
@@ -298,250 +298,77 @@
         </dependency>
     </dependencies>
 
-    <profiles>
-        <profile>
-            <id>unit</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <properties>
-                <test-classes>**/UnitTestSuite.java</test-classes>
-            </properties>
-        </profile>
-        <profile>
-            <id>file</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <properties>
-                <source_type>file</source_type>
-                <store_path>files</store_path>
-                <test-classes>**/FileLoadTest.java</test-classes>
-            </properties>
-        </profile>
-        <profile>
-            <id>hdfs</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <properties>
-                <source_type>hdfs</source_type>
-                <!-- same as hdfs://localhost:8020/files -->
-                <store_path>/files</store_path>
-                <test-classes>**/HDFSLoadTest.java</test-classes>
-            </properties>
-        </profile>
-        <profile>
-            <id>jdbc</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <properties>
-                <test-classes>**/JDBCLoadTest.java</test-classes>
-            </properties>
-        </profile>
-        <profile>
-            <id>release</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-source-plugin</artifactId>
-                        <version>2.2.1</version>
-                        <executions>
-                            <execution>
-                                <id>attach-sources</id>
-                                <goals>
-                                    <goal>jar-no-fork</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>2.9.1</version>
-                        <executions>
-                            <execution>
-                                <id>attach-javadocs</id>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.5</version>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
-
     <build>
         <plugins>
+
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.1</version>
                 <configuration>
-                    <source>${compiler.source}</source>
-                    <target>${compiler.target}</target>
-                    <compilerArguments>
-                        <Xmaxerrs>500</Xmaxerrs>
-                    </compilerArguments>
-                    <compilerArgs>
-                        <arg>-Xlint:unchecked</arg>
-                    </compilerArgs>
+                    <source>1.8</source>
+                    <target>1.8</target>
                 </configuration>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <transformers>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>com.baidu.hugegraph.loader.HugeGraphLoader</mainClass>
+                                </transformer>
+                            </transformers>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!--maven打jar包需要插件-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>2.4</version>
-                <executions>
-                    <execution>
-                        <id>assembly-hugegraph-loader</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                        <configuration>
-                            <attach>false</attach>
-                            <appendAssemblyId>false</appendAssemblyId>
-                            <outputDirectory>${project.basedir}</outputDirectory>
-                            <descriptor>${assembly.descriptor.dir}/assembly.xml</descriptor>
-                            <finalName>${final.name}</finalName>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <tasks>
-                                <echo file="${project.basedir}/dist.sh">
-                                    tar -zcvf \
-                                    ${project.basedir}/${final.name}.tar.gz ${final.name} || exit 1
-                                    rm -f ${project.basedir}/dist.sh
-                                    echo -n "hugegraph-loader tar.gz available at: "
-                                    echo "${project.basedir}/${final.name}.tar.gz"
-                                </echo>
-                                <exec executable="${shell-executable}"
-                                      dir="${project.basedir}" failonerror="true">
-                                    <arg line="./dist.sh"/>
-                                </exec>
-                            </tasks>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-clean-plugin</artifactId>
-                <version>3.0.0</version>
                 <configuration>
-                    <filesets>
-                        <fileset>
-                            <directory>${project.basedir}</directory>
-                            <includes>
-                                <include>*.tar.gz</include>
-                                <include>${final.name}/**</include>
-                            </includes>
-                            <followSymlinks>false</followSymlinks>
-                        </fileset>
-                        <fileset>
-                            <directory>${final.name}</directory>
-                        </fileset>
-                    </filesets>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.4</version>
-                <executions>
-                    <execution>
-                        <id>pre-unit-test</id>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>post-unit-test</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>
-                                ${project.build.directory}
-                            </outputDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>properties-maven-plugin</artifactId>
-                <version>1.0.0</version>
-                <executions>
-                    <execution>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>write-project-properties</goal>
-                        </goals>
-                        <configuration>
-                            <outputFile>
-                                ${project.build.testOutputDirectory}/profile.properties
-                            </outputFile>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <version>2.7</version>
-                <configuration>
-                    <encoding>UTF-8</encoding>
-                    <nonFilteredFileExtensions>
-                        <nonFilteredFileExtension>parquet</nonFilteredFileExtension>
-                    </nonFilteredFileExtensions>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.20</version>
-                <configuration>
-                    <includes>
-                        <include>${test-classes}</include>
-                    </includes>
+                    <!--设置false后是去掉MySpark-1.0-jar-with-dependencies-->
+                    <!--<appendAssemblyId>false</appendAssemblyId>-->
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                    <archive>
+                        <manifest>
+                            <!--<mainClass>com.yunlk.demo.kafka.producerandconsumerser.consumer.CompanyConsumerDemo</mainClass>-->
+                            <mainClass>com.baidu.hugegraph.loader.HugeGraphLoader</mainClass>
+                        </manifest>
+                    </archive>
                 </configuration>
             </plugin>
         </plugins>
 
-        <testResources>
-            <testResource>
-                <directory>src/test/resources/</directory>
-                <filtering>true</filtering>
-            </testResource>
-        </testResources>
     </build>
 </project>
