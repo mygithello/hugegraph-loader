@@ -72,9 +72,7 @@ public class HDFSFileReader extends FileReader {
 
     private void enableKerberos(HDFSSource source) throws IOException {
         KerberosConfig kerberosConfig = this.source().kerberosConfig();
-        System.out.println("=============3==================");
         if (kerberosConfig != null && kerberosConfig.enable() ) {
-            System.out.println("=============4=================");
             System.setProperty("java.security.krb5.conf",
                                kerberosConfig.krb5Conf());
             UserGroupInformation.setConfiguration(this.conf);
