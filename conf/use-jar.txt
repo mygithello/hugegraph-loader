@@ -1,0 +1,5 @@
+#!/bin/bash
+echo "use loader jar start..."
+#success java -Dname="HugeGraphLoader" -Dloader.home.path=/data/soft/hugegraph-loader -Dlog4j.configurationFile=/data/soft/hugegraph-loader/conf/log4j2.xml  -Djava.library.path=/data/soft/hugegraph-loader/native -Xmx10g -cp hugegraph-loader-0.12.0.jar com.baidu.hugegraph.loader.HugeGraphLoader -g relation --username admin --token 123456 -f mapping.json -s schema.groovy > useJar.log
+
+java -Dname="HugeGraphLoader" -Xmx10g -cp /data/soft/hugegraph-loader.jar com.baidu.hugegraph.loader.HugeGraphLoader -g relation --username admin --token 123456 -f mapping.json -s schema.groovy > useJar.log

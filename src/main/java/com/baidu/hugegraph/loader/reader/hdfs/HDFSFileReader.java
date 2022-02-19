@@ -62,6 +62,7 @@ public class HDFSFileReader extends FileReader {
             this.enableKerberos(source);
             this.hdfs = FileSystem.get(this.conf);
         } catch (IOException e) {
+            e.printStackTrace();
             throw new LoadException("Failed to create HDFS file system", e);
         }
         Path path = new Path(source.path());
@@ -137,6 +138,7 @@ public class HDFSFileReader extends FileReader {
 
     private Configuration loadConfiguration() {
         Configuration conf = new Configuration();
+        conf.set("fs.hdfs.impl", "org.apache.hadoop.hdfs.DistributedFileSystem");//java.io.IOException: No FileSystem for scheme: hdfs
         conf.addResource(new Path(this.source().coreSitePath()));
         if (this.source().hdfsSitePath() != null) {
             conf.addResource(new Path(this.source().hdfsSitePath()));
