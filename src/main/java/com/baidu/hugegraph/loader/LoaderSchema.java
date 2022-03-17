@@ -58,11 +58,11 @@ public final class LoaderSchema {
     }
 
     public LoaderSchema(String[] args) {
-        this(LoadOptions.parseOptions(args));
+        this(LoadOptions.parseOptions(args,"schema"));
     }
 
     public LoaderSchema(LoadOptions options) {
-        this(options, LoadMapping.of(options.file));
+        this(options, null);
     }
 
     public LoaderSchema(LoadOptions options, LoadMapping mapping) {
@@ -152,7 +152,7 @@ public final class LoaderSchema {
         if (this.context.closed()) {
             return;
         }
-        LOG.info("Stop loading then shutdown HugeGraphLoader");
+        LOG.info("Stop loading then shutdown LoaderSchema");
         try {
             this.context.stopLoading();
             if (this.manager != null) {
@@ -164,7 +164,8 @@ public final class LoaderSchema {
             try {
                 this.context.unsetLoadingMode();
             } finally {
-                this.context.close();
+                //loader schema use
+                this.context.close("schema");
             }
         }
     }

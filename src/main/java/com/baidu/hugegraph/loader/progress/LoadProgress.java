@@ -118,6 +118,10 @@ public final class LoadProgress  {
         FileUtils.write(file, json, Constants.CHARSET, false);
     }
 
+    //loader just schema
+    public void write(LoadContext context,String mode) throws IOException {
+    }
+
     public static LoadProgress read(File file) throws IOException {
         String json = FileUtils.readFileToString(file, Constants.CHARSET);
         return JsonUtil.fromJson(json, LoadProgress.class);

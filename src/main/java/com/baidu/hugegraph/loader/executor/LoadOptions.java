@@ -43,7 +43,8 @@ public class LoadOptions {
     public static final String HTTP_SCHEMA = "http";
     private static final int CPUS = Runtime.getRuntime().availableProcessors();
 
-    @Parameter(names = {"-f", "--file"}, required = true, arity = 1,
+//    @Parameter(names = {"-f", "--file"}, required = true, arity = 1,
+    @Parameter(names = {"-f", "--file"}, arity = 1,
                validateWith = {FileValidator.class},
                description = "The path of the data mapping description file")
     public String file;
@@ -205,6 +206,63 @@ public class LoadOptions {
         } else {
             return "NORMAL MODE";
         }
+    }
+
+
+    /**
+     * just loader schema
+     * @param args
+     * @param mode
+     * @return
+     */
+    public static LoadOptions parseOptions(String[] args,String mode) {
+        LoadOptions options = new LoadOptions();
+        JCommander commander = JCommander.newBuilder()
+                .addObject(options)
+                .build();
+        commander.parse(args);
+        // Print usage and exit
+        if (options.help) {
+            LoadUtil.exitWithUsage(commander, Constants.EXIT_CODE_NORM);
+        }
+
+        if (!"schema".equals(mode)){
+            // Check options
+            // Check option "-f"
+            E.checkArgument(!StringUtils.isEmpty(options.file),
+                    "The mapping file must be specified");
+            E.checkArgument(options.file.endsWith(Constants.JSON_SUFFIX),
+                    "The mapping file name must be end with %s",
+                    Constants.JSON_SUFFIX);
+            File mappingFile = new File(options.file);
+            if (!mappingFile.canRead()) {
+                LOG.error("The mapping file must be readable: '{}'", mappingFile);
+                LoadUtil.exitWithUsage(commander, Constants.EXIT_CODE_ERROR);
+            }
+        }
+
+        // Check option "-g"
+        E.checkArgument(!StringUtils.isEmpty(options.graph),
+                "The graph must be specified");
+        // Check option "-h"
+        if (!options.host.startsWith(Constants.HTTP_PREFIX)) {
+            if (options.protocol.equals(HTTP_SCHEMA)) {
+                options.host = Constants.HTTP_PREFIX + options.host;
+            } else {
+                options.host = Constants.HTTPS_PREFIX + options.host;
+            }
+        }
+        // Check option --incremental-mode and --failure-mode
+        E.checkArgument(!(options.incrementalMode && options.failureMode),
+                "The option --incremental-mode and --failure-mode " +
+                        "can't be true at same time");
+        if (options.failureMode) {
+            LOG.info("The failure-mode will scan the entire error file");
+            options.maxReadErrors = Constants.NO_LIMIT;
+            options.maxParseErrors = Constants.NO_LIMIT;
+            options.maxInsertErrors = Constants.NO_LIMIT;
+        }
+        return options;
     }
 
     public static LoadOptions parseOptions(String[] args) {
