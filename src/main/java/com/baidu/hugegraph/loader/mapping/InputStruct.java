@@ -84,6 +84,11 @@ public class InputStruct implements Checkable {
         return this.skip;
     }
 
+    //3.添加方法,代码设置是否跳过
+    public void setSkip(boolean skip) {
+        this.skip = skip;
+    }
+
     public InputSource input() {
         return this.input;
     }
@@ -96,8 +101,19 @@ public class InputStruct implements Checkable {
         return this.vertices;
     }
 
+    //4.添加设置vertices 方法
+    public void setVertices(List<VertexMapping> vertices) {
+        this.vertices = vertices;
+    }
+
+
     public List<EdgeMapping> edges() {
         return this.edges;
+    }
+
+    //5.添加设置edges方法
+    public void setEdges(List<EdgeMapping> edges) {
+        this.edges = edges;
     }
 
     public void add(ElementMapping mapping) {

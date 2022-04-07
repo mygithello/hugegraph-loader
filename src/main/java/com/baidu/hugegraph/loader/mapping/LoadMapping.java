@@ -54,6 +54,18 @@ public class LoadMapping implements Checkable {
     @JsonProperty("structs")
     private List<InputStruct> structs;
 
+    // 1.添加json转换方法
+    public static LoadMapping ofJsonStr(String jsonStr) {
+        LoadMapping mapping;
+        try {
+            mapping = MappingUtil.parse(jsonStr);
+        } catch (Exception e) {
+            throw new LoadException("Failed to read mapping mapping file '%s'",
+                    e, jsonStr);
+        }
+        return mapping;
+    }
+
     public static LoadMapping of(String filePath) {
         File file = FileUtils.getFile(filePath);
         LoadMapping mapping;
@@ -99,6 +111,15 @@ public class LoadMapping implements Checkable {
 
     public List<InputStruct> structs() {
         return this.structs;
+    }
+
+    //6.添加方法setStructs
+    public void setStructs(List<InputStruct> structs) {
+        this.structs = structs;
+    }
+    //7,添加设置版本方法
+    public void setVersion(String version) {
+        this.version = version;
     }
 
     public List<InputStruct> structsForFailure(LoadOptions options) {

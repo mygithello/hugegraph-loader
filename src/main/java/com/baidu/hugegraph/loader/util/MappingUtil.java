@@ -80,12 +80,14 @@ public final class MappingUtil {
         E.checkArgument(ACCEPTABLE_VERSIONS.contains(version),
                         "Invalid version '%s', the acceptable versions are %s",
                         version, ACCEPTABLE_VERSIONS);
-        if (version.equals(Constants.V2_STRUCT_VERSION)) {
-            return JsonUtil.fromJson(json, LoadMapping.class);
-        } else {
-            assert version.equals(Constants.V1_STRUCT_VERSION);
-            return parseV1(json);
-        }
+// 2.默认使用v2版本检验
+//        if (version.equals(Constants.V2_STRUCT_VERSION)) {
+//            return JsonUtil.fromJson(json, LoadMapping.class);
+//        } else {
+//            assert version.equals(Constants.V1_STRUCT_VERSION);
+//            return parseV1(json);  //V1 版本不支持，这里只用V2
+//        }
+        return JsonUtil.fromJson(json, LoadMapping.class);
     }
 
     private static LoadMapping parseV1(String json) {
