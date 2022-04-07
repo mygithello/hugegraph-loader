@@ -298,6 +298,8 @@
     </dependencies>
 
     <build>
+        <!--设置打出包的名称-->
+        <finalName>hugegraph-loader</finalName>
         <plugins>
 
             <plugin>
